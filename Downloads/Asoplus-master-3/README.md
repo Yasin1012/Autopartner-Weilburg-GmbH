@@ -1,1 +1,0 @@
-### ASOPLUS PROJECT
