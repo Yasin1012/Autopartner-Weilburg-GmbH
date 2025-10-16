@@ -39,8 +39,17 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (username, password) => {
     try {
+      console.log('AuthContext: Attempting login for user:', username);
       const response = await authAPI.login({ username, password });
+      console.log('AuthContext: Login response:', response.data);
+      
       const { token: newToken, role, username: returnedUsername } = response.data;
+
+      if (!newToken) {
+        console.error('AuthContext: No token received');
+        toast.error('Keine gültige Antwort vom Server');
+        return false;
+      }
 
       localStorage.setItem('token', newToken);
       localStorage.setItem('role', role);
@@ -52,9 +61,11 @@ export const AuthProvider = ({ children }) => {
         role,
       });
 
+      console.log('AuthContext: Login successful, user set:', { username: returnedUsername || username, role });
       toast.success('Erfolgreich angemeldet!');
       return true;
     } catch (error) {
+      console.error('AuthContext: Login error:', error);
       const message = error.response?.data?.message || 'Anmeldung fehlgeschlagen';
       toast.error(message);
       return false;

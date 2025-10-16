@@ -1,14 +1,6 @@
 -- Seed data for Autopartner Weilburg Backend
--- Admin user: username=admin, password=admin123
--- Regular user: username=user, password=user123
-
--- Insert admin user (password: admin123, hashed with BCrypt cost 12)
-INSERT INTO users (username, password, role, created_at) VALUES 
-('admin', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN96VFog.dGaLkUMvPW.S', 'ADMIN', CURRENT_TIMESTAMP);
-
--- Insert regular user (password: user123, hashed with BCrypt cost 12)
-INSERT INTO users (username, password, role, created_at) VALUES 
-('user', '$2a$12$HqWqEa89r5vKClkGGUHEI.GhkCPLhT0L4RQBiGW0Pm.9m.6p.6ZOu', 'USER', CURRENT_TIMESTAMP);
+-- Note: Users are created programmatically via StartupBean.java
+-- Default users: admin/admin123 (ADMIN), user/user123 (USER)
 
 -- Insert sample vehicles
 INSERT INTO vehicles (model, type, first_registration, mileage, equipment, price, active, created_at) VALUES 

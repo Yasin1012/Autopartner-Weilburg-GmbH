@@ -24,13 +24,24 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
 
-    const success = await login(username, password);
+    try {
+      console.log('Attempting login...', username);
+      const success = await login(username, password);
+      console.log('Login result:', success);
 
-    if (success) {
-      navigate(from, { replace: true });
+      if (success) {
+        console.log('Login successful, navigating to:', from);
+        setTimeout(() => {
+          navigate(from, { replace: true });
+        }, 100);
+      } else {
+        console.log('Login failed');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (

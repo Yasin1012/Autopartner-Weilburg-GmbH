@@ -1,14 +1,17 @@
 package com.autopartner.backend.security;
 
-import io.smallrye.jwt.build.Jwt;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-import java.util.Arrays;
-import java.util.HashSet;
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
+import java.util.List;
 
 /**
- * Utility class for JWT token generation.
+ * Utility class for JWT token generation using JJWT.
  * 
  * @author Autopartner Weilburg Development Team
  * @version 1.0.0
@@ -22,6 +25,13 @@ public class JwtUtil {
     @ConfigProperty(name = "jwt.issuer", defaultValue = "https://autopartner-weilburg.de")
     String issuer;
 
+    @ConfigProperty(name = "smallrye.jwt.sign.key")
+    String signKey;
+
+    private SecretKey getSigningKey() {
+        return Keys.hmacShaKeyFor(signKey.getBytes(StandardCharsets.UTF_8));
+    }
+
     /**
      * Generate a JWT token for a user.
      * 
@@ -30,11 +40,18 @@ public class JwtUtil {
      * @return the generated JWT token
      */
     public String generateToken(String username, String role) {
-        return Jwt.issuer(issuer)
-                .upn(username)
-                .groups(new HashSet<>(Arrays.asList(role)))
-                .expiresIn(duration)
-                .sign();
+        Date now = new Date();
+        Date expiration = new Date(now.getTime() + (duration * 1000));
+
+        return Jwts.builder()
+                .subject(username)
+                .claim("upn", username)
+                .claim("groups", List.of(role))
+                .issuer(issuer)
+                .issuedAt(now)
+                .expiration(expiration)
+                .signWith(getSigningKey())
+                .compact();
     }
 
     /**
@@ -46,11 +63,18 @@ public class JwtUtil {
      * @return the generated JWT token
      */
     public String generateToken(String username, String role, long durationInSeconds) {
-        return Jwt.issuer(issuer)
-                .upn(username)
-                .groups(new HashSet<>(Arrays.asList(role)))
-                .expiresIn(durationInSeconds)
-                .sign();
+        Date now = new Date();
+        Date expiration = new Date(now.getTime() + (durationInSeconds * 1000));
+
+        return Jwts.builder()
+                .subject(username)
+                .claim("upn", username)
+                .claim("groups", List.of(role))
+                .issuer(issuer)
+                .issuedAt(now)
+                .expiration(expiration)
+                .signWith(getSigningKey())
+                .compact();
     }
 }
 
