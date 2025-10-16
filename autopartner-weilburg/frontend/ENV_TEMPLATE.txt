@@ -1,0 +1,8 @@
+# Autopartner Weilburg Frontend - Environment Configuration
+# Copy this file to .env and adjust the values
+
+# Backend API URL
+# Development: http://localhost:8080
+# Production: https://api.autopartner-weilburg.de
+VITE_API_URL=http://localhost:8080
+
