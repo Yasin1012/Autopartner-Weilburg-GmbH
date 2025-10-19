@@ -20,20 +20,30 @@ api.interceptors.request.use(
 );
 
 // Response interceptor - handle errors
+let hasShownSessionExpired = false;
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('role');
-      localStorage.removeItem('username');
-      window.location.href = '/login';
-      toast.error('Sitzung abgelaufen. Bitte melden Sie sich erneut an.');
-    } else if (error.response?.status === 403) {
+    // Only handle errors for non-login requests
+    const isLoginRequest = error.config?.url?.includes('/auth/login');
+    
+    if (error.response?.status === 401 && !isLoginRequest) {
+      // Only show session expired message once to avoid spam
+      if (!hasShownSessionExpired) {
+        hasShownSessionExpired = true;
+        localStorage.removeItem('token');
+        localStorage.removeItem('role');
+        localStorage.removeItem('username');
+        toast.error('Sitzung abgelaufen. Bitte melden Sie sich erneut an.');
+        // Reset flag after 2 seconds
+        setTimeout(() => { hasShownSessionExpired = false; }, 2000);
+      }
+    } else if (error.response?.status === 403 && !isLoginRequest) {
       toast.error('Zugriff verweigert.');
-    } else if (error.response?.status === 404) {
+    } else if (error.response?.status === 404 && !isLoginRequest) {
       toast.error('Ressource nicht gefunden.');
-    } else if (error.response?.status >= 500) {
+    } else if (error.response?.status >= 500 && !isLoginRequest) {
       toast.error('Serverfehler. Bitte versuchen Sie es später erneut.');
     }
     return Promise.reject(error);

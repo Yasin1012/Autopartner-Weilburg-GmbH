@@ -25,11 +25,11 @@ public class JwtUtil {
     @ConfigProperty(name = "jwt.issuer", defaultValue = "https://autopartner-weilburg.de")
     String issuer;
 
-    @ConfigProperty(name = "smallrye.jwt.sign.key")
-    String signKey;
+    @ConfigProperty(name = "jwt.secret")
+    String secret;
 
     private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(signKey.getBytes(StandardCharsets.UTF_8));
+        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
     /**

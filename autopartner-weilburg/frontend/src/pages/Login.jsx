@@ -7,22 +7,24 @@ import Loader from '../components/Loader';
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const { login, isAuthenticated } = useAuth();
+  const [submitting, setSubmitting] = useState(false);
+  const { login, isAuthenticated, loading, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   const from = location.state?.from?.pathname || '/admin';
 
   useEffect(() => {
-    if (isAuthenticated()) {
+    // Only check once when loading is complete
+    if (!loading && user) {
+      console.log('Already authenticated, redirecting to:', from);
       navigate(from, { replace: true });
     }
-  }, [isAuthenticated, navigate, from]);
+  }, [loading, user, navigate, from]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setSubmitting(true);
 
     try {
       console.log('Attempting login...', username);
@@ -31,18 +33,24 @@ const Login = () => {
 
       if (success) {
         console.log('Login successful, navigating to:', from);
-        setTimeout(() => {
-          navigate(from, { replace: true });
-        }, 100);
+        navigate(from, { replace: true });
       } else {
         console.log('Login failed');
       }
     } catch (error) {
       console.error('Login error:', error);
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-[80vh] flex items-center justify-center">
+        <Loader />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -99,10 +107,10 @@ const Login = () => {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={submitting}
               className="btn btn-primary w-full flex items-center justify-center"
             >
-              {loading ? (
+              {submitting ? (
                 <Loader size="sm" />
               ) : (
                 'Anmelden'

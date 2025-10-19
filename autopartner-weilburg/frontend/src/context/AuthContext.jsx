@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import { authAPI } from '../services/api';
 import toast from 'react-hot-toast';
@@ -21,7 +21,11 @@ export const AuthProvider = ({ children }) => {
         const decoded = jwtDecode(storedToken);
         // Check if token is expired
         if (decoded.exp * 1000 < Date.now()) {
-          logout();
+          localStorage.removeItem('token');
+          localStorage.removeItem('role');
+          localStorage.removeItem('username');
+          setUser(null);
+          setToken(null);
         } else {
           setUser({
             username: storedUsername || decoded.upn,
@@ -31,13 +35,17 @@ export const AuthProvider = ({ children }) => {
         }
       } catch (error) {
         console.error('Invalid token:', error);
-        logout();
+        localStorage.removeItem('token');
+        localStorage.removeItem('role');
+        localStorage.removeItem('username');
+        setUser(null);
+        setToken(null);
       }
     }
     setLoading(false);
   }, []);
 
-  const login = async (username, password) => {
+  const login = useCallback(async (username, password) => {
     try {
       console.log('AuthContext: Attempting login for user:', username);
       const response = await authAPI.login({ username, password });
@@ -51,17 +59,21 @@ export const AuthProvider = ({ children }) => {
         return false;
       }
 
-      localStorage.setItem('token', newToken);
-      localStorage.setItem('role', role);
-      localStorage.setItem('username', returnedUsername || username);
-
-      setToken(newToken);
-      setUser({
+      const userData = {
         username: returnedUsername || username,
         role,
-      });
+      };
 
-      console.log('AuthContext: Login successful, user set:', { username: returnedUsername || username, role });
+      // Update state first, then localStorage
+      setUser(userData);
+      setToken(newToken);
+      
+      // Then update localStorage
+      localStorage.setItem('token', newToken);
+      localStorage.setItem('role', role);
+      localStorage.setItem('username', userData.username);
+
+      console.log('AuthContext: Login successful, user set:', userData);
       toast.success('Erfolgreich angemeldet!');
       return true;
     } catch (error) {
@@ -70,24 +82,24 @@ export const AuthProvider = ({ children }) => {
       toast.error(message);
       return false;
     }
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
     localStorage.removeItem('username');
     setUser(null);
     setToken(null);
     toast.success('Erfolgreich abgemeldet');
-  };
+  }, []);
 
-  const isAdmin = () => {
+  const isAdmin = useCallback(() => {
     return user?.role === 'ADMIN';
-  };
+  }, [user]);
 
-  const isAuthenticated = () => {
+  const isAuthenticated = useCallback(() => {
     return !!token && !!user;
-  };
+  }, [token, user]);
 
   return (
     <AuthContext.Provider

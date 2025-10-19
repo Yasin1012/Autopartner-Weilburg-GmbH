@@ -1,21 +1,19 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Car, Users, TrendingUp, Package } from 'lucide-react';
 import { vehicleAPI } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import Sidebar from '../components/Sidebar';
 
 const AdminDashboard = () => {
+  const { token, loading } = useAuth();
   const [stats, setStats] = useState({
     totalVehicles: 0,
     activeVehicles: 0,
     inactiveVehicles: 0,
   });
 
-  useEffect(() => {
-    fetchStats();
-  }, []);
-
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       const response = await vehicleAPI.getAll();
       const vehicles = response.data;
@@ -25,9 +23,19 @@ const AdminDashboard = () => {
         inactiveVehicles: vehicles.filter((v) => !v.active).length,
       });
     } catch (error) {
-      console.error('Error fetching stats:', error);
+      // Silently ignore 401 errors on initial load
+      if (error.response?.status !== 401) {
+        console.error('Error fetching stats:', error);
+      }
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    // Only fetch stats when auth is loaded and token is available
+    if (!loading && token) {
+      fetchStats();
+    }
+  }, [loading, token, fetchStats]);
 
   const statCards = [
     {
