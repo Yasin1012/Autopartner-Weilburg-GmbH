@@ -33,8 +33,16 @@ docker-compose up -d
 echo -e "${YELLOW}⏳ Waiting for MariaDB to be ready...${NC}"
 sleep 5
 
-until docker-compose exec -T mariadb mysqladmin ping -h localhost --silent 2>/dev/null; do
-    echo -e "${YELLOW}⏳ Still waiting for MariaDB...${NC}"
+# Try to connect to MariaDB using mariadb client
+MAX_TRIES=15
+COUNTER=0
+until docker-compose exec -T mariadb mariadb -uadmin -psecret -e "SELECT 1" >/dev/null 2>&1; do
+    COUNTER=$((COUNTER+1))
+    if [ $COUNTER -gt $MAX_TRIES ]; then
+        echo -e "${YELLOW}⚠️  MariaDB check timeout. Proceeding anyway...${NC}"
+        break
+    fi
+    echo -e "${YELLOW}⏳ Still waiting for MariaDB... ($COUNTER/$MAX_TRIES)${NC}"
     sleep 2
 done
 
