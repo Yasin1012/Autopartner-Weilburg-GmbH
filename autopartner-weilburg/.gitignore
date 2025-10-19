@@ -98,3 +98,9 @@ temp/
 *.bak
 *.cache
 
+# ===========================
+# Uploaded Files
+# ===========================
+backend/backend/uploads/
+uploads/
+
