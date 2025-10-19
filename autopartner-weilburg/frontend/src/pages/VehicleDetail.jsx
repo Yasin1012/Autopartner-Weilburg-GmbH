@@ -11,6 +11,7 @@ const VehicleDetail = () => {
   const navigate = useNavigate();
   const [vehicle, setVehicle] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState(0);
 
   useEffect(() => {
     fetchVehicle();
@@ -50,16 +51,66 @@ const VehicleDetail = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Image Section */}
           <div>
-            <div className="card p-0">
-              <div className="h-96 bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center rounded-t-lg">
-                <span className="text-gray-500 text-2xl font-medium">{vehicle.model}</span>
-              </div>
-              <div className="p-4 bg-gray-50">
-                <p className="text-sm text-gray-500 text-center">
-                  Fahrzeugbilder verfügbar bei Anfrage
-                </p>
-              </div>
-            </div>
+            {(() => {
+              const images = vehicle.images ? vehicle.images.split(',').map(img => img.trim()) : [];
+              
+              if (images.length > 0) {
+                return (
+                  <div className="card p-0">
+                    {/* Main Image */}
+                    <div className="h-96 overflow-hidden rounded-t-lg">
+                      <img 
+                        src={images[selectedImage]} 
+                        alt={`${vehicle.model} - Bild ${selectedImage + 1}`}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = 'https://via.placeholder.com/800x600/e5e7eb/6b7280?text=' + encodeURIComponent(vehicle.model);
+                        }}
+                      />
+                    </div>
+                    
+                    {/* Image Thumbnails */}
+                    {images.length > 1 && (
+                      <div className="p-4 bg-gray-50 grid grid-cols-4 gap-2">
+                        {images.map((img, index) => (
+                          <button
+                            key={index}
+                            onClick={() => setSelectedImage(index)}
+                            className={`h-20 overflow-hidden rounded border-2 transition-all ${
+                              selectedImage === index ? 'border-primary-600' : 'border-gray-200 hover:border-gray-400'
+                            }`}
+                          >
+                            <img 
+                              src={img} 
+                              alt={`Thumbnail ${index + 1}`}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = 'https://via.placeholder.com/200x150/e5e7eb/6b7280';
+                              }}
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              } else {
+                return (
+                  <div className="card p-0">
+                    <div className="h-96 bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center rounded-t-lg">
+                      <span className="text-gray-500 text-2xl font-medium">{vehicle.model}</span>
+                    </div>
+                    <div className="p-4 bg-gray-50">
+                      <p className="text-sm text-gray-500 text-center">
+                        Fahrzeugbilder verfügbar bei Anfrage
+                      </p>
+                    </div>
+                  </div>
+                );
+              }
+            })()}
           </div>
 
           {/* Details Section */}
@@ -70,6 +121,13 @@ const VehicleDetail = () => {
             <div className="text-4xl font-bold text-primary-600 mb-8">
               {formatPrice(vehicle.price)}
             </div>
+
+            {vehicle.description && (
+              <div className="mb-8 p-4 bg-gray-50 rounded-lg">
+                <h3 className="text-lg font-semibold mb-2">Beschreibung</h3>
+                <p className="text-gray-700 whitespace-pre-line">{vehicle.description}</p>
+              </div>
+            )}
 
             <div className="space-y-4 mb-8">
               <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg">

@@ -3,16 +3,38 @@ import { Calendar, Gauge, Euro } from 'lucide-react';
 import { formatPrice, formatMileage, formatDate } from '../utils/format';
 
 const VehicleCard = ({ vehicle }) => {
+  const firstImage = vehicle.images?.split(',')[0]?.trim();
+
   return (
     <Link to={`/vehicles/${vehicle.id}`} className="card hover:shadow-lg transition-shadow">
-      {/* Image placeholder */}
-      <div className="h-48 bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-        <span className="text-gray-500 text-lg font-medium">{vehicle.model}</span>
-      </div>
+      {/* Vehicle Image */}
+      {firstImage ? (
+        <div className="h-48 overflow-hidden">
+          <img 
+            src={firstImage} 
+            alt={vehicle.model}
+            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = 'https://via.placeholder.com/800x600/e5e7eb/6b7280?text=' + encodeURIComponent(vehicle.model);
+            }}
+          />
+        </div>
+      ) : (
+        <div className="h-48 bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+          <span className="text-gray-500 text-lg font-medium">{vehicle.model}</span>
+        </div>
+      )}
 
       <div className="p-4">
         <h3 className="text-xl font-semibold text-gray-900 mb-2">{vehicle.model}</h3>
-        <p className="text-sm text-gray-600 mb-4">{vehicle.type}</p>
+        <p className="text-sm text-gray-600 mb-2">{vehicle.type}</p>
+        
+        {vehicle.description && (
+          <p className="text-sm text-gray-500 mb-4 line-clamp-2">
+            {vehicle.description}
+          </p>
+        )}
 
         <div className="space-y-2 mb-4">
           <div className="flex items-center text-sm text-gray-600">

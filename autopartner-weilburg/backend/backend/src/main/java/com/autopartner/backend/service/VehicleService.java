@@ -69,6 +69,8 @@ public class VehicleService {
         vehicle.setEquipment(createDTO.getEquipment());
         vehicle.setPrice(createDTO.getPrice());
         vehicle.setActive(createDTO.getActive() != null ? createDTO.getActive() : true);
+        vehicle.setDescription(createDTO.getDescription());
+        vehicle.setImages(createDTO.getImages());
 
         vehicleRepository.persist(vehicle);
 
@@ -112,6 +114,12 @@ public class VehicleService {
         if (updateDTO.getActive() != null) {
             vehicle.setActive(updateDTO.getActive());
         }
+        if (updateDTO.getDescription() != null) {
+            vehicle.setDescription(updateDTO.getDescription());
+        }
+        if (updateDTO.getImages() != null) {
+            vehicle.setImages(updateDTO.getImages());
+        }
 
         vehicleRepository.persist(vehicle);
         return toDTO(vehicle);
@@ -146,6 +154,8 @@ public class VehicleService {
                 vehicle.getEquipment(),
                 vehicle.getPrice(),
                 vehicle.getActive(),
+                vehicle.getDescription(),
+                vehicle.getImages(),
                 vehicle.getCreatedAt()
         );
     }

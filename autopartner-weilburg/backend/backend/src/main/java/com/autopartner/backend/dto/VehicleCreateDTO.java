@@ -38,6 +38,10 @@ public class VehicleCreateDTO {
 
     private Boolean active = true;
 
+    private String description;
+
+    private String images; // Comma-separated list of image URLs
+
     // Constructors
     public VehicleCreateDTO() {
     }
@@ -107,6 +111,22 @@ public class VehicleCreateDTO {
 
     public void setActive(Boolean active) {
         this.active = active;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getImages() {
+        return images;
+    }
+
+    public void setImages(String images) {
+        this.images = images;
     }
 }
 

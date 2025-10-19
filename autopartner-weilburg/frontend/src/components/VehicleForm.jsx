@@ -10,6 +10,8 @@ const VehicleForm = ({ vehicle, onSubmit, onCancel }) => {
     equipment: vehicle?.equipment || '',
     price: vehicle?.price || '',
     active: vehicle?.active ?? true,
+    description: vehicle?.description || '',
+    images: vehicle?.images || '',
   });
 
   const handleSubmit = (e) => {
@@ -137,6 +139,37 @@ const VehicleForm = ({ vehicle, onSubmit, onCancel }) => {
               step="0.01"
               required
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Beschreibung
+            </label>
+            <textarea
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              className="input"
+              rows="4"
+              placeholder="Detaillierte Beschreibung des Fahrzeugs..."
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Bilder (URLs durch Komma getrennt)
+            </label>
+            <textarea
+              name="images"
+              value={formData.images}
+              onChange={handleChange}
+              className="input"
+              rows="2"
+              placeholder="https://example.com/bild1.jpg, https://example.com/bild2.jpg"
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Mehrere Bild-URLs können durch Komma getrennt werden
+            </p>
           </div>
 
           <div className="flex items-center">

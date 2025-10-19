@@ -21,6 +21,8 @@ public class VehicleDTO {
     private String equipment;
     private BigDecimal price;
     private Boolean active;
+    private String description;
+    private String images;
     private LocalDateTime createdAt;
 
     // Constructors
@@ -28,8 +30,8 @@ public class VehicleDTO {
     }
 
     public VehicleDTO(Long id, String model, String type, LocalDate firstRegistration, 
-                      Integer mileage, String equipment, BigDecimal price, Boolean active, 
-                      LocalDateTime createdAt) {
+                      Integer mileage, String equipment, BigDecimal price, Boolean active,
+                      String description, String images, LocalDateTime createdAt) {
         this.id = id;
         this.model = model;
         this.type = type;
@@ -38,6 +40,8 @@ public class VehicleDTO {
         this.equipment = equipment;
         this.price = price;
         this.active = active;
+        this.description = description;
+        this.images = images;
         this.createdAt = createdAt;
     }
 
@@ -112,6 +116,22 @@ public class VehicleDTO {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getImages() {
+        return images;
+    }
+
+    public void setImages(String images) {
+        this.images = images;
     }
 }
 
