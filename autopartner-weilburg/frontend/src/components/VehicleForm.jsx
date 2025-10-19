@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { X } from 'lucide-react';
+import { X, Upload, Image as ImageIcon } from 'lucide-react';
+import { fileAPI } from '../services/api';
+import toast from 'react-hot-toast';
 
 const VehicleForm = ({ vehicle, onSubmit, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -13,14 +15,42 @@ const VehicleForm = ({ vehicle, onSubmit, onCancel }) => {
     description: vehicle?.description || '',
     images: vehicle?.images || '',
   });
+  const [imageFiles, setImageFiles] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
+  const [uploadMode, setUploadMode] = useState('url'); // 'url' or 'file'
+  const [uploading, setUploading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSubmit({
+    
+    let finalFormData = {
       ...formData,
       mileage: parseInt(formData.mileage),
       price: parseFloat(formData.price),
-    });
+    };
+
+    // Upload files if in file mode
+    if (uploadMode === 'file' && imageFiles.length > 0) {
+      try {
+        setUploading(true);
+        const response = await fileAPI.uploadImages(imageFiles);
+        const uploadedUrls = response.data;
+        
+        // Convert to full URLs and join with comma
+        const fullUrls = uploadedUrls.map(url => `http://localhost:8080${url}`);
+        finalFormData.images = fullUrls.join(', ');
+        
+        toast.success(`${uploadedUrls.length} Bild(er) hochgeladen`);
+      } catch (error) {
+        toast.error('Fehler beim Hochladen der Bilder');
+        setUploading(false);
+        return;
+      } finally {
+        setUploading(false);
+      }
+    }
+
+    onSubmit(finalFormData);
   };
 
   const handleChange = (e) => {
@@ -29,6 +59,20 @@ const VehicleForm = ({ vehicle, onSubmit, onCancel }) => {
       ...prev,
       [name]: type === 'checkbox' ? checked : value,
     }));
+  };
+
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    setImageFiles(files);
+
+    // Generate previews
+    const previews = files.map(file => URL.createObjectURL(file));
+    setImagePreviews(previews);
+  };
+
+  const removeImagePreview = (index) => {
+    setImageFiles(prev => prev.filter((_, i) => i !== index));
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
   return (
@@ -47,6 +91,105 @@ const VehicleForm = ({ vehicle, onSubmit, onCancel }) => {
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {/* 1. BILDER */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Fahrzeugbilder
+            </label>
+            
+            {/* Mode Switcher */}
+            <div className="flex space-x-2 mb-4">
+              <button
+                type="button"
+                onClick={() => setUploadMode('url')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  uploadMode === 'url' 
+                    ? 'bg-primary-600 text-white' 
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                <ImageIcon className="h-4 w-4 inline mr-2" />
+                URL eingeben
+              </button>
+              <button
+                type="button"
+                onClick={() => setUploadMode('file')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  uploadMode === 'file' 
+                    ? 'bg-primary-600 text-white' 
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                <Upload className="h-4 w-4 inline mr-2" />
+                Dateien hochladen
+              </button>
+            </div>
+
+            {uploadMode === 'url' ? (
+              <div>
+                <textarea
+                  name="images"
+                  value={formData.images}
+                  onChange={handleChange}
+                  className="input"
+                  rows="2"
+                  placeholder="https://example.com/bild1.jpg, https://example.com/bild2.jpg"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  Mehrere Bild-URLs können durch Komma getrennt werden
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary-400 transition-colors">
+                  <input
+                    type="file"
+                    id="image-upload"
+                    accept="image/*"
+                    multiple
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                  <label htmlFor="image-upload" className="cursor-pointer">
+                    <Upload className="h-12 w-12 mx-auto text-gray-400 mb-2" />
+                    <p className="text-sm text-gray-600">
+                      Klicken Sie hier oder ziehen Sie Bilder hierher
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      PNG, JPG, GIF, WEBP bis zu 10MB
+                    </p>
+                  </label>
+                </div>
+
+                {/* Image Previews */}
+                {imagePreviews.length > 0 && (
+                  <div className="mt-4 grid grid-cols-3 gap-2">
+                    {imagePreviews.map((preview, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={preview}
+                          alt={`Preview ${index + 1}`}
+                          className="w-full h-24 object-cover rounded border"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeImagePreview(index)}
+                          className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                        <p className="text-xs text-gray-500 mt-1 truncate">
+                          {imageFiles[index]?.name}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* 2. MODELL */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Modell *
@@ -61,6 +204,22 @@ const VehicleForm = ({ vehicle, onSubmit, onCancel }) => {
             />
           </div>
 
+          {/* 3. BESCHREIBUNG */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Beschreibung
+            </label>
+            <textarea
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              className="input"
+              rows="4"
+              placeholder="Detaillierte Beschreibung des Fahrzeugs..."
+            />
+          </div>
+
+          {/* 4. REST DER FELDER */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Fahrzeugtyp *
@@ -141,37 +300,6 @@ const VehicleForm = ({ vehicle, onSubmit, onCancel }) => {
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Beschreibung
-            </label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              className="input"
-              rows="4"
-              placeholder="Detaillierte Beschreibung des Fahrzeugs..."
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Bilder (URLs durch Komma getrennt)
-            </label>
-            <textarea
-              name="images"
-              value={formData.images}
-              onChange={handleChange}
-              className="input"
-              rows="2"
-              placeholder="https://example.com/bild1.jpg, https://example.com/bild2.jpg"
-            />
-            <p className="mt-1 text-xs text-gray-500">
-              Mehrere Bild-URLs können durch Komma getrennt werden
-            </p>
-          </div>
-
           <div className="flex items-center">
             <input
               type="checkbox"
@@ -190,14 +318,16 @@ const VehicleForm = ({ vehicle, onSubmit, onCancel }) => {
               type="button"
               onClick={onCancel}
               className="btn btn-secondary"
+              disabled={uploading}
             >
               Abbrechen
             </button>
             <button
               type="submit"
               className="btn btn-primary"
+              disabled={uploading}
             >
-              {vehicle ? 'Speichern' : 'Erstellen'}
+              {uploading ? 'Bilder werden hochgeladen...' : (vehicle ? 'Speichern' : 'Erstellen')}
             </button>
           </div>
         </form>
