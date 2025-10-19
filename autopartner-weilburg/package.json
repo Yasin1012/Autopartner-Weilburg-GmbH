@@ -1,0 +1,23 @@
+{
+  "name": "autopartner-weilburg",
+  "version": "1.0.0",
+  "description": "Full Stack Autopartner Weilburg Application",
+  "private": true,
+  "scripts": {
+    "start": "npm run start:db && concurrently \"npm run start:backend\" \"npm run start:frontend\"",
+    "start:db": "docker-compose up -d && echo '⏳ Waiting for database...' && sleep 5",
+    "start:backend": "cd backend/backend && ./mvnw quarkus:dev",
+    "start:frontend": "cd frontend && npm run dev",
+    "start:all": "concurrently -n \"Backend,Frontend\" -c \"blue,magenta\" \"npm run start:backend\" \"npm run start:frontend\"",
+    "stop": "docker-compose down && echo 'Services stopped'",
+    "test:backend": "cd backend/backend && ./mvnw test",
+    "build:backend": "cd backend/backend && ./mvnw clean package",
+    "build:frontend": "cd frontend && npm run build",
+    "build:all": "npm run build:backend && npm run build:frontend",
+    "dev": "./start-dev.sh"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
+
