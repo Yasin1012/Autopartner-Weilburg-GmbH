@@ -65,5 +65,20 @@ export const vehicleAPI = {
   delete: (id) => api.delete(`/api/vehicles/${id}`),
 };
 
+// File Upload API
+export const fileAPI = {
+  uploadImages: (files) => {
+    const formData = new FormData();
+    files.forEach(file => {
+      formData.append('files', file);
+    });
+    return api.post('/api/uploads/images', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+};
+
 export default api;
 
