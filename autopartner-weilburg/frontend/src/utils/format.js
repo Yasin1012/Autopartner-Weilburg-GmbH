@@ -2,10 +2,16 @@
  * Format currency in EUR
  */
 export const formatPrice = (price) => {
-  return new Intl.NumberFormat('de-DE', {
-    style: 'currency',
-    currency: 'EUR',
-  }).format(price);
+  if (price === null || price === undefined) return '€ 0,00';
+  try {
+    return new Intl.NumberFormat('de-DE', {
+      style: 'currency',
+      currency: 'EUR',
+    }).format(price);
+  } catch (error) {
+    console.error('Price formatting error:', error, price);
+    return `€ ${price}`;
+  }
 };
 
 /**
@@ -13,14 +19,27 @@ export const formatPrice = (price) => {
  */
 export const formatDate = (date) => {
   if (!date) return '';
-  return new Intl.DateFormat('de-DE').format(new Date(date));
+  try {
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return '';
+    return new Intl.DateTimeFormat('de-DE').format(d);
+  } catch (error) {
+    console.error('Date formatting error:', error, date);
+    return String(date);
+  }
 };
 
 /**
  * Format mileage with separator
  */
 export const formatMileage = (mileage) => {
-  return new Intl.NumberFormat('de-DE').format(mileage) + ' km';
+  if (mileage === null || mileage === undefined) return '0 km';
+  try {
+    return new Intl.NumberFormat('de-DE').format(mileage) + ' km';
+  } catch (error) {
+    console.error('Mileage formatting error:', error, mileage);
+    return `${mileage} km`;
+  }
 };
 
 /**
